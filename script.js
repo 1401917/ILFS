@@ -1,238 +1,235 @@
-// Three.js Scene Setup
-let scene, camera, renderer, airplane, clouds = [];
-let particles = [];
+// Canvas 2D Animation Setup
+let canvas, ctx;
+let airplane = {
+    x: 0,
+    y: 0,
+    rotation: 0,
+    scale: 1,
+    propellerRotation: 0
+};
+let clouds = [];
+let stars = [];
+let time = 0;
 
-function initThreeJS() {
-    // Scene
-    scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x0f172a, 10, 100);
-
-    // Camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 15;
-    camera.position.y = 3;
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
-    document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7.5);
-    scene.add(directionalLight);
-
-    const pointLight = new THREE.PointLight(0x0ea5e9, 1, 100);
-    pointLight.position.set(0, 5, 10);
-    scene.add(pointLight);
-
-    // Create Airplane
-    createAirplane();
-
-    // Create Clouds
-    createClouds();
-
-    // Create Stars/Particles
-    createStars();
-
-    // Animation Loop
+function initCanvas() {
+    // Create canvas
+    canvas = document.createElement('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.zIndex = '-1';
+    document.getElementById('canvas-container').appendChild(canvas);
+    
+    ctx = canvas.getContext('2d');
+    
+    // Initialize clouds
+    for (let i = 0; i < 20; i++) {
+        clouds.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height * 0.7,
+            size: Math.random() * 60 + 40,
+            speed: Math.random() * 0.5 + 0.2,
+            opacity: Math.random() * 0.3 + 0.1
+        });
+    }
+    
+    // Initialize stars
+    for (let i = 0; i < 200; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2,
+            twinkle: Math.random() * Math.PI * 2
+        });
+    }
+    
+    // Start animation
     animate();
-
-    // Handle Resize
+    
+    // Handle resize
     window.addEventListener('resize', onWindowResize, false);
 }
 
-function createAirplane() {
-    const airplaneGroup = new THREE.Group();
-
-    // Fuselage (Body)
-    const fuselageGeometry = new THREE.CylinderGeometry(0.3, 0.3, 3, 32);
-    const fuselageMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xe0e0e0,
-        shininess: 100,
-        specular: 0x444444
-    });
-    const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
-    fuselage.rotation.z = Math.PI / 2;
-    airplaneGroup.add(fuselage);
-
-    // Nose Cone
-    const noseGeometry = new THREE.ConeGeometry(0.3, 0.8, 32);
-    const noseMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x0ea5e9,
-        shininess: 100
-    });
-    const nose = new THREE.Mesh(noseGeometry, noseMaterial);
-    nose.rotation.z = -Math.PI / 2;
-    nose.position.x = 1.9;
-    airplaneGroup.add(nose);
-
+function drawAirplane() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 3;
+    
+    // Update airplane position for flight path
+    airplane.x = Math.sin(time * 0.0005) * 200;
+    airplane.y = Math.sin(time * 0.0003) * 80;
+    airplane.rotation = Math.sin(time * 0.0005) * 0.2;
+    airplane.propellerRotation += 0.3;
+    
+    ctx.save();
+    ctx.translate(centerX + airplane.x, centerY + airplane.y);
+    ctx.rotate(airplane.rotation);
+    ctx.scale(2, 2);
+    
+    // Shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 5;
+    
+    // Fuselage
+    ctx.fillStyle = '#e0e0e0';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 60, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Nose
+    ctx.fillStyle = '#0ea5e9';
+    ctx.beginPath();
+    ctx.moveTo(50, 0);
+    ctx.lineTo(70, -8);
+    ctx.lineTo(70, 8);
+    ctx.closePath();
+    ctx.fill();
+    
     // Wings
-    const wingGeometry = new THREE.BoxGeometry(0.3, 6, 1.5);
-    const wingMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x0ea5e9,
-        shininess: 80
-    });
-    const wings = new THREE.Mesh(wingGeometry, wingMaterial);
-    wings.position.x = -0.3;
-    airplaneGroup.add(wings);
-
-    // Tail Wing
-    const tailWingGeometry = new THREE.BoxGeometry(0.2, 3, 1);
-    const tailWing = new THREE.Mesh(tailWingGeometry, wingMaterial);
-    tailWing.position.x = -1.3;
-    tailWing.position.y = 0.5;
-    airplaneGroup.add(tailWing);
-
-    // Vertical Stabilizer
-    const stabilizerGeometry = new THREE.BoxGeometry(0.2, 0.1, 1.2);
-    const stabilizer = new THREE.Mesh(stabilizerGeometry, wingMaterial);
-    stabilizer.rotation.x = Math.PI / 2;
-    stabilizer.position.x = -1.3;
-    stabilizer.position.z = 0.6;
-    airplaneGroup.add(stabilizer);
-
-    // Cockpit Window
-    const cockpitGeometry = new THREE.SphereGeometry(0.25, 16, 16, 0, Math.PI);
-    const cockpitMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x222222,
-        transparent: true,
-        opacity: 0.6
-    });
-    const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
-    cockpit.rotation.z = -Math.PI / 2;
-    cockpit.position.x = 1.2;
-    cockpit.position.y = 0.25;
-    airplaneGroup.add(cockpit);
-
+    ctx.fillStyle = '#0ea5e9';
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.lineTo(-30, -50);
+    ctx.lineTo(-20, -50);
+    ctx.lineTo(10, 0);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.lineTo(-30, 50);
+    ctx.lineTo(-20, 50);
+    ctx.lineTo(10, 0);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Tail
+    ctx.fillStyle = '#0ea5e9';
+    ctx.beginPath();
+    ctx.moveTo(-55, 0);
+    ctx.lineTo(-70, -25);
+    ctx.lineTo(-60, -25);
+    ctx.lineTo(-50, 0);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Vertical stabilizer
+    ctx.beginPath();
+    ctx.moveTo(-55, 0);
+    ctx.lineTo(-60, -5);
+    ctx.lineTo(-60, -35);
+    ctx.lineTo(-50, -30);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Cockpit window
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.beginPath();
+    ctx.ellipse(30, 0, 12, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
     // Propeller
-    const propellerGroup = new THREE.Group();
-    const bladeGeometry = new THREE.BoxGeometry(0.1, 2, 0.1);
-    const bladeMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+    ctx.save();
+    ctx.translate(70, 0);
+    ctx.rotate(airplane.propellerRotation);
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(-2, -30, 4, 60);
+    ctx.fillRect(-30, -2, 60, 4);
+    ctx.restore();
     
-    const blade1 = new THREE.Mesh(bladeGeometry, bladeMaterial);
-    const blade2 = new THREE.Mesh(bladeGeometry, bladeMaterial);
-    blade2.rotation.z = Math.PI / 2;
+    // Engine details
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-20, -10);
+    ctx.lineTo(-20, 10);
+    ctx.moveTo(0, -10);
+    ctx.lineTo(0, 10);
+    ctx.moveTo(20, -10);
+    ctx.lineTo(20, 10);
+    ctx.stroke();
     
-    propellerGroup.add(blade1);
-    propellerGroup.add(blade2);
-    propellerGroup.position.x = 2.3;
-    airplaneGroup.add(propellerGroup);
-
-    // Store propeller reference for animation
-    airplaneGroup.propeller = propellerGroup;
-
-    // Position and scale
-    airplaneGroup.position.set(0, 2, 0);
-    airplaneGroup.scale.set(1.5, 1.5, 1.5);
-
-    airplane = airplaneGroup;
-    scene.add(airplane);
+    ctx.restore();
 }
 
-function createClouds() {
-    for (let i = 0; i < 15; i++) {
-        const cloudGroup = new THREE.Group();
+function drawClouds() {
+    clouds.forEach(cloud => {
+        ctx.save();
+        ctx.globalAlpha = cloud.opacity;
+        ctx.fillStyle = '#ffffff';
         
-        // Create multiple spheres for each cloud
-        for (let j = 0; j < 5; j++) {
-            const cloudGeometry = new THREE.SphereGeometry(
-                Math.random() * 0.5 + 0.5,
-                16,
-                16
-            );
-            const cloudMaterial = new THREE.MeshPhongMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.3,
-                shininess: 10
-            });
-            const cloudPart = new THREE.Mesh(cloudGeometry, cloudMaterial);
-            cloudPart.position.x = Math.random() * 2 - 1;
-            cloudPart.position.y = Math.random() * 0.5;
-            cloudPart.position.z = Math.random() * 1 - 0.5;
-            cloudGroup.add(cloudPart);
+        // Draw cloud as multiple overlapping circles
+        for (let i = 0; i < 5; i++) {
+            const offsetX = (i - 2) * cloud.size * 0.3;
+            const offsetY = Math.sin(i) * cloud.size * 0.2;
+            ctx.beginPath();
+            ctx.arc(cloud.x + offsetX, cloud.y + offsetY, cloud.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
         }
-
-        cloudGroup.position.x = Math.random() * 40 - 20;
-        cloudGroup.position.y = Math.random() * 10 - 5;
-        cloudGroup.position.z = Math.random() * 40 - 20;
         
-        clouds.push(cloudGroup);
-        scene.add(cloudGroup);
-    }
+        ctx.restore();
+        
+        // Move cloud
+        cloud.x += cloud.speed;
+        if (cloud.x > canvas.width + cloud.size) {
+            cloud.x = -cloud.size;
+            cloud.y = Math.random() * canvas.height * 0.7;
+        }
+    });
 }
 
-function createStars() {
-    const starGeometry = new THREE.BufferGeometry();
-    const starVertices = [];
-
-    for (let i = 0; i < 1000; i++) {
-        const x = (Math.random() - 0.5) * 200;
-        const y = (Math.random() - 0.5) * 200;
-        const z = (Math.random() - 0.5) * 200;
-        starVertices.push(x, y, z);
-    }
-
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-
-    const starMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.1,
-        transparent: true,
-        opacity: 0.8
+function drawStars() {
+    stars.forEach(star => {
+        star.twinkle += 0.05;
+        const opacity = (Math.sin(star.twinkle) + 1) / 2 * 0.8 + 0.2;
+        
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
     });
+}
 
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
+function drawBackground() {
+    // Gradient sky
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#0f172a');
+    gradient.addColorStop(0.5, '#1e293b');
+    gradient.addColorStop(1, '#334155');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function animate() {
     requestAnimationFrame(animate);
-
-    // Animate airplane
-    if (airplane) {
-        // Flight path animation
-        airplane.position.x = Math.sin(Date.now() * 0.0005) * 8;
-        airplane.position.y = Math.sin(Date.now() * 0.0003) * 2 + 2;
-        airplane.position.z = Math.cos(Date.now() * 0.0005) * 5;
-        
-        // Rotation for banking
-        airplane.rotation.z = Math.sin(Date.now() * 0.0005) * 0.3;
-        airplane.rotation.y = Math.sin(Date.now() * 0.0005) * 0.5 + Math.PI / 2;
-        airplane.rotation.x = Math.sin(Date.now() * 0.0003) * 0.2;
-
-        // Propeller rotation
-        if (airplane.propeller) {
-            airplane.propeller.rotation.x += 0.5;
-        }
-    }
-
-    // Animate clouds
-    clouds.forEach((cloud, index) => {
-        cloud.position.x += 0.02;
-        if (cloud.position.x > 25) {
-            cloud.position.x = -25;
-        }
-        cloud.rotation.y += 0.001;
-    });
-
-    // Gentle camera movement
-    camera.position.x = Math.sin(Date.now() * 0.0001) * 2;
-    camera.position.y = Math.sin(Date.now() * 0.00015) * 1 + 3;
-    camera.lookAt(0, 2, 0);
-
-    renderer.render(scene, camera);
+    time = Date.now();
+    
+    // Clear and draw background
+    drawBackground();
+    
+    // Draw stars
+    drawStars();
+    
+    // Draw clouds
+    drawClouds();
+    
+    // Draw airplane
+    drawAirplane();
 }
 
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Reposition stars
+    stars.forEach(star => {
+        if (star.x > canvas.width) star.x = Math.random() * canvas.width;
+        if (star.y > canvas.height) star.y = Math.random() * canvas.height;
+    });
 }
 
 // Particle Effect for Background
@@ -283,8 +280,8 @@ function createParticleEffect() {
 
 // Smooth Scrolling for Navigation Links
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Three.js
-    initThreeJS();
+    // Initialize Canvas animation
+    initCanvas();
     
     // Create particle effect
     createParticleEffect();
@@ -425,20 +422,8 @@ document.addEventListener('DOMContentLoaded', function() {
 function addDynamicWeather() {
     const hour = new Date().getHours();
     
-    // Add different atmospheric effects based on time
-    if (hour >= 6 && hour < 12) {
-        // Morning - clear sky
-        scene.fog.color.setHex(0x87ceeb);
-    } else if (hour >= 12 && hour < 18) {
-        // Afternoon - bright
-        scene.fog.color.setHex(0x0ea5e9);
-    } else if (hour >= 18 && hour < 21) {
-        // Evening - sunset colors
-        scene.fog.color.setHex(0xfb923c);
-    } else {
-        // Night - dark blue
-        scene.fog.color.setHex(0x0f172a);
-    }
+    // Add different atmospheric effects based on time - update canvas background
+    // This is now handled in the canvas rendering
 }
 
 // Call weather update periodically
@@ -446,12 +431,8 @@ setInterval(addDynamicWeather, 60000); // Update every minute
 
 // Performance optimization
 if (window.innerWidth < 768) {
-    // Reduce particle count on mobile
-    clouds.forEach((cloud, index) => {
-        if (index > 5) {
-            scene.remove(cloud);
-        }
-    });
+    // Reduce cloud count on mobile
+    clouds = clouds.slice(0, 8);
 }
 
 console.log('🛫 ILFS Flight Simulator Website Loaded Successfully!');
