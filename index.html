@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ILFS - פרויקט סימולטור טיסה מתקדם</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <!-- Navigation Toolbar -->
+    <nav class="toolbar">
+        <div class="logo">
+            <span class="logo-icon">✈</span>
+            <span class="logo-text">ILFS</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#home" class="nav-link active">בית</a></li>
+            <li><a href="#about" class="nav-link">אודות הפרויקט</a></li>
+            <li><a href="#features" class="nav-link">תכונות</a></li>
+            <li><a href="#simulator" class="nav-link">סימולטור</a></li>
+            <li><a href="#aircraft" class="nav-link">מטוסים</a></li>
+            <li><a href="#missions" class="nav-link">משימות</a></li>
+            <li><a href="#gallery" class="nav-link">גלריה</a></li>
+            <li><a href="#contact" class="nav-link">צור קשר</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn-start">התחל טיסה</button>
+        </div>
+    </nav>
+
+    <!-- 3D Background Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="glitch" data-text="ILFS">ILFS</h1>
+                <h2>סימולטור טיסה מתקדם</h2>
+                <p class="hero-description">חווה את חוויית הטיסה המציאותית ביותר עם גרפיקה תלת-מימדית מתקדמת, פיזיקה ריאליסטית ומשימות מרתקות</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary">התחל עכשיו</button>
+                    <button class="btn btn-secondary">למד עוד</button>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse"></div>
+            <span>גלול למטה</span>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">אודות הפרויקט</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="card-icon">🎮</div>
+                    <h3>סימולציה ריאליסטית</h3>
+                    <p>מנוע פיזיקה מתקדם המדמה באופן מדויק את התנהגות המטוס באוויר, כולל אווירודינמיקה ומזג אוויר</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🌍</div>
+                    <h3>עולם פתוח</h3>
+                    <p>עולם תלת-מימדי עצום עם נופים מפורטים, ערים, שדות תעופה ואזורי משימות</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">✈️</div>
+                    <h3>מגוון מטוסים</h3>
+                    <p>בחירה רחבה של מטוסים - ממטוסי אימון קלים ועד למטוסי קרב מתקדמים</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>משימות מרתקות</h3>
+                    <p>מערכת משימות דינמית עם אתגרים מגוונים, מתחילים ועד מומחים</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">תכונות מרכזיות</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-number">01</div>
+                    <h3>גרפיקה תלת-מימדית מתקדמת</h3>
+                    <p>מנוע גרפי מתקדם עם תאורה דינמית, צללים, השתקפויות ואפקטים ויזואליים מרהיבים</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">02</div>
+                    <h3>מערכת מזג אוויר דינמית</h3>
+                    <p>מזג אוויר משתנה בזמן אמת - רוחות, עננים, סערות וגשם המשפיעים על הטיסה</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">03</div>
+                    <h3>פיזיקה ריאליסטית</h3>
+                    <p>מודל פיזיקלי מדויק של אווירודינמיקה, משקל, מנועים והתנהגות המטוס</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">04</div>
+                    <h3>מצבי משחק מגוונים</h3>
+                    <p>מצב חופשי, משימות, אתגרים, אימונים וטיסות תחרותיות</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simulator Section -->
+    <section id="simulator" class="section simulator">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">חווית הסימולטור</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="simulator-content">
+                <div class="simulator-info">
+                    <h3>מערכת בקרה מתקדמת</h3>
+                    <ul class="info-list">
+                        <li>תמיכה במקלדת, עכבר ובקרים ייעודיים</li>
+                        <li>הגדרות התאמה אישיות לכל שליטה</li>
+                        <li>מערכת HUD מפורטת עם כל המידע החיוני</li>
+                        <li>מערכת ניווט GPS ומפות אווירי</li>
+                        <li>תקשורת רדיו ובקרת תעבורה אווירית</li>
+                    </ul>
+                </div>
+                <div class="simulator-stats">
+                    <div class="stat-box">
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">מטוסים</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">משימות</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">שדות תעופה</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">אפשרויות</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Aircraft Section -->
+    <section id="aircraft" class="section aircraft">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">מטוסים זמינים</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="aircraft-grid">
+                <div class="aircraft-card">
+                    <div class="aircraft-image">✈️</div>
+                    <h3>Cessna 172</h3>
+                    <p>מטוס אימון קל ויציב, מושלם למתחילים</p>
+                    <div class="aircraft-specs">
+                        <span>מהירות מקס: 226 קמ"ש</span>
+                        <span>טווח: 1,185 ק"מ</span>
+                    </div>
+                </div>
+                <div class="aircraft-card">
+                    <div class="aircraft-image">🛩️</div>
+                    <h3>Piper PA-28</h3>
+                    <p>מטוס אימון פופולרי עם ביצועים טובים</p>
+                    <div class="aircraft-specs">
+                        <span>מהירות מקס: 260 קמ"ש</span>
+                        <span>טווח: 1,400 ק"מ</span>
+                    </div>
+                </div>
+                <div class="aircraft-card">
+                    <div class="aircraft-image">🛫</div>
+                    <h3>Boeing 737</h3>
+                    <p>מטוס נוסעים מסחרי מתקדם</p>
+                    <div class="aircraft-specs">
+                        <span>מהירות מקס: 850 קמ"ש</span>
+                        <span>טווח: 5,700 ק"מ</span>
+                    </div>
+                </div>
+                <div class="aircraft-card">
+                    <div class="aircraft-image">✈️</div>
+                    <h3>F-16 Fighting Falcon</h3>
+                    <p>מטוס קרב רב-משימתי מתקדם</p>
+                    <div class="aircraft-specs">
+                        <span>מהירות מקס: 2,400 קמ"ש</span>
+                        <span>טווח: 4,200 ק"מ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section gallery">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">גלריית תמונות</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <div class="placeholder-image">🌅</div>
+                    <p>טיסה בשקיעה</p>
+                </div>
+                <div class="gallery-item">
+                    <div class="placeholder-image">☁️</div>
+                    <p>מעל העננים</p>
+                </div>
+                <div class="gallery-item">
+                    <div class="placeholder-image">🌃</div>
+                    <p>טיסת לילה</p>
+                </div>
+                <div class="gallery-item">
+                    <div class="placeholder-image">⛰️</div>
+                    <p>מעל ההרים</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">צור קשר</h2>
+                <div class="title-underline"></div>
+            </div>
+            <div class="contact-content">
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="שם מלא" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="אימייל" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="הודעה" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">שלח הודעה</button>
+                </form>
+                <div class="contact-info">
+                    <h3>מידע ליצירת קשר</h3>
+                    <p>📧 info@ilfs-simulator.com</p>
+                    <p>📱 +972-XX-XXXXXXX</p>
+                    <p>📍 תל אביב, ישראל</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ILFS</h3>
+                    <p>סימולטור טיסה מתקדם לדור הבא</p>
+                </div>
+                <div class="footer-section">
+                    <h4>קישורים מהירים</h4>
+                    <ul>
+                        <li><a href="#home">בית</a></li>
+                        <li><a href="#about">אודות</a></li>
+                        <li><a href="#features">תכונות</a></li>
+                        <li><a href="#contact">צור קשר</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>עקוב אחרינו</h4>
+                    <div class="social-links">
+                        <a href="#">Facebook</a>
+                        <a href="#">Twitter</a>
+                        <a href="#">YouTube</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ILFS. כל הזכויות שמורות.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Particles Effect -->
+    <div id="particles"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
