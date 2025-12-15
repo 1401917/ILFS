@@ -25,7 +25,8 @@ function initCanvas() {
     ctx = canvas.getContext('2d');
     
     // Initialize clouds
-    for (let i = 0; i < 20; i++) {
+    const cloudCount = window.innerWidth < 768 ? 8 : 20;
+    for (let i = 0; i < cloudCount; i++) {
         clouds.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height * 0.7,
@@ -237,9 +238,18 @@ function createParticleEffect() {
     const particlesContainer = document.getElementById('particles');
     const particleCount = 50;
 
+    // Create style element for animations
+    const style = document.createElement('style');
+    let styleContent = '';
+
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
+        const animationName = `float-particle-${i}`;
+        const duration = 5 + Math.random() * 10;
+        const delay = Math.random() * 5;
+        const xOffset = Math.random() * 100 - 50;
+        
         particle.style.cssText = `
             position: fixed;
             width: 2px;
@@ -249,32 +259,33 @@ function createParticleEffect() {
             pointer-events: none;
             left: ${Math.random() * 100}%;
             top: ${Math.random() * 100}%;
-            animation: float-particle ${5 + Math.random() * 10}s linear infinite;
-            animation-delay: ${Math.random() * 5}s;
+            animation: ${animationName} ${duration}s linear infinite;
+            animation-delay: ${delay}s;
         `;
         particlesContainer.appendChild(particle);
+        
+        // Generate unique animation for each particle
+        styleContent += `
+            @keyframes ${animationName} {
+                0% {
+                    transform: translateY(0) translateX(0);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100vh) translateX(${xOffset}px);
+                    opacity: 0;
+                }
+            }
+        `;
     }
 
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes float-particle {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px);
-                opacity: 0;
-            }
-        }
-    `;
+    style.textContent = styleContent;
     document.head.appendChild(style);
 }
 
@@ -326,7 +337,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const startButtons = document.querySelectorAll('.btn-start, .btn-primary');
     startButtons.forEach(button => {
         button.addEventListener('click', function() {
-            if (this.textContent.includes('התחל')) {
+            // Check if button is a start button by class or text content
+            if (this.classList.contains('btn-start') || 
+                this.textContent.includes('התחל') || 
+                this.textContent.includes('התחילה')) {
                 alert('הסימולטור יושק בקרוב! נרשמת לרשימת ההמתנה.');
             }
         });
@@ -418,22 +432,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Add dynamic weather effects (rain/clouds based on time)
+// Dynamic weather effect (placeholder for future implementation)
 function addDynamicWeather() {
-    const hour = new Date().getHours();
-    
-    // Add different atmospheric effects based on time - update canvas background
-    // This is now handled in the canvas rendering
+    // Future: Add different atmospheric effects based on time of day
+    // This would update the canvas background colors dynamically
 }
 
-// Call weather update periodically
-setInterval(addDynamicWeather, 60000); // Update every minute
+// Call weather update periodically (currently disabled until implementation)
+// setInterval(addDynamicWeather, 60000);
 
-// Performance optimization
-if (window.innerWidth < 768) {
-    // Reduce cloud count on mobile
-    clouds = clouds.slice(0, 8);
-}
+// Performance optimization - reduce cloud count on mobile (handled in initCanvas)
 
 console.log('🛫 ILFS Flight Simulator Website Loaded Successfully!');
 console.log('✈️  Enjoy the immersive aviation experience!');
